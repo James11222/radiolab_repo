@@ -1,0 +1,2 @@
+user: your_username
+pass: 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
