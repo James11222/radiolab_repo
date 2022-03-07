@@ -1,5 +1,5 @@
 # Preamble
-# import ugradio
+import ugradio
 from astropy import units as u
 from astropy.coordinates import SkyCoord
 from astropy.time import Time
