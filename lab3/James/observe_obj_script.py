@@ -30,7 +30,7 @@ parser.add_argument('-DEC', action='store', dest='DEC',
                     help='Store a constant value for the declination of object.')
 
 results = parser.parse_args()
-print('Observation Time = {0} Minutes'.format(int(results.obs_len)))
+print('Observation Time = {0} Minutes'.format(float(results.obs_len)))
 print('Pause Time = {0} Seconds'.format(float(results.pause_time)))
 print('Time Resolution = {0} Seconds'.format(float(results.resolution)))
 print('RA = {0} degrees'.format(float(results.RA)))
@@ -132,4 +132,4 @@ def take_data(obs_length, time_per_iter, dt, init_ra=None, init_dec=None):
 #-----------------------------------------------
 
 if __name__ == "__main__":
-    take_data(results.obs_len, results.pause_time, results.resolution, results.RA, results.DEC)
+    take_data(float(results.obs_len), float(results.pause_time), float(results.resolution), float(results.RA), float(results.DEC))
