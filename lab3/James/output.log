@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "observe_obj_script.py", line 2, in <module>
+    import ugradio
+  File "/home/global/lib/python3.6/site-packages/ugradio/__init__.py", line 2, in <module>
+    from . import timing # ImportError if astropy not installed
+  File "/home/global/lib/python3.6/site-packages/ugradio/timing.py", line 2, in <module>
+    import astropy.time
+  File "/home/global/lib/python3.6/site-packages/astropy/__init__.py", line 32
+    raise UnsupportedPythonError(f"Astropy does not support Python < {__minimum_python_version__}")
+                                                                                                 ^
+SyntaxError: invalid syntax
