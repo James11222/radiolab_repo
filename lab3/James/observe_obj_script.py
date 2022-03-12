@@ -98,15 +98,13 @@ def take_data(obs_length, time_per_iter, dt, init_ra=None, init_dec=None):
             imf.point(alt, az) # repoint the telescope to new alt, az, following the object's path
             print("Succesfully pointed, moved to new alt, az: {0:0.3f}, {1:0.3f}".format(alt, az))
             
-        except:
-            # check if object is in the northern sky
-            if alt < ugradio.interf.ALT_MIN or alt > ugradio.interf.ALT_MAX: # if outside alt range
-                alt = 180-alt # flip the telescope so that it doesn't error
-                #alt -= 180 
-                print('Outside altitude range so flipping.')
-                
+        except(AssertionError):
+            print("Failed alt, az = {0}, {1}".format(alt,az))
+
+            # check if object is in the northern sky                
             if az < ugradio.interf.AZ_MIN or az > ugradio.interf.AZ_MAX: # if outside az range
                 az += 180 # flip the telescope so that it doesn't error
+                alt = 180-alt # flip the telescope so that it doesn't error
                 print('Outside azimuth range so flipping.')
                 
             try:
@@ -114,6 +112,7 @@ def take_data(obs_length, time_per_iter, dt, init_ra=None, init_dec=None):
                 print("Succesfully pointed, moved to new alt, az: {0:0.3f}, {1:0.3f}".format(alt, az))
                 
             except: # if something else goes wrong
+                print("Flip Pointing Failed alt, az = {0}, {1}".format(alt,az))
                 print("That shit failed, saving data and moving to stow position.")
                 break
             
