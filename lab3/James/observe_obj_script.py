@@ -1,10 +1,6 @@
 # Preamble
 import ugradio
-from astropy import units as u
-from astropy.coordinates import SkyCoord
-from astropy.time import Time
-from datetime import datetime
-from datetime import timedelta
+import sys
 import time
 import numpy as np
 
@@ -157,6 +153,7 @@ def take_data(obs_length, time_per_iter, dt, obj_type="pt_source", init_ra=None,
                 print("The code probably broke because ugradio/interferometer is broken.")
 
         i+=1
+        sys.stdout.flush()
 
             
     final_data = hpm.get_recording_data()
