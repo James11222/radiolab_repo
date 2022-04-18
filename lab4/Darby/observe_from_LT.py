@@ -74,6 +74,7 @@ def take_leusch_data(nspec, filename):
     telescope = ugradio.leusch.LeuschTelescope()
     spectrometer = ugradio.leusch.Spectrometer()
     noise = ugradio.leusch.LeuschNoise()
+    synthesizer = ugradio.agilent.SynthDirect()
     
     
     LT_lat, LT_lon, LT_alt = ugradio.leo.lat, ugradio.leo.lon, ugradio.leo.alt # get LT coords
@@ -115,7 +116,11 @@ def take_leusch_data(nspec, filename):
 
                 print('Current L.T. alt, az (degrees): {0:.4f}, {1:.4f}'.format(alt, az), 
                       '\nTurning on noise diode.')
-
+                
+                synthesizer.set_frequency(635,'MHz')
+                spectrometer.read_spec(filename "_main" +'_'+index_string + ".fits", nspec, (l,b), 'ga')
+                
+                synthesizer.set_frequency(670,'MHz')
                 noise.on()
                 print('Collecting spectrum with noise diode on.')
 
@@ -124,6 +129,7 @@ def take_leusch_data(nspec, filename):
                 print('Finished collecting spectrum with noide diode on. Turning off noise diode...')
                 noise.off()
                 print('Collecting spectrum with noise diode off.')
+       
                 spectrometer.read_spec(filename_noise_off+'_'+index_string + ".fits", nspec, (l,b), 'ga')
                 print('Finished collecting spectrum with noise diode off.')
 
