@@ -2,6 +2,7 @@ import ugradio
 import numpy as np
 import matplotlib.pyplot as plt
 import astropy
+import time
 from astropy import units as u
 from astropy.time import Time
 from astropy.coordinates import SkyCoord, AltAz, EarthLocation
@@ -43,29 +44,32 @@ def take_leusch_data(nspec, filename):
        
     """
     filename_noise_on, filename_noise_off = filename + "_noise_on", filename + "_noise_off"
+
     #-------------------------------------------------------------------------------------------------------
     #                                          Make Coordinate Grid        
     #-------------------------------------------------------------------------------------------------------
     
-    l_min, l_max = 105, 160
-    b_min, b_max = 15, 50
+    # l_min, l_max = 105, 160
+    # b_min, b_max = 15, 50
 
-    db = 2
-    dl = lambda b: 2/np.cos(b * (np.pi/180))
+    # db = 2
+    # dl = lambda b: 2/np.cos(b * (np.pi/180))
 
-    Δb = b_max - b_min
-    Δl = l_max - l_min
+    # Δb = b_max - b_min
+    # Δl = l_max - l_min
 
-    bs = np.array([b_min + i*db for i in range(50) if (b_min + i*db) < b_max])
+    # bs = np.array([b_min + i*db for i in range(50) if (b_min + i*db) < b_max])
 
-    ls = []
-    for b in bs:
-        ls.append(np.array([l_min + i*dl(b) for i in range(50) if (l_min + i*dl(b)) < l_max]))
+    # ls = []
+    # for b in bs:
+    #     ls.append(np.array([l_min + i*dl(b) for i in range(50) if (l_min + i*dl(b)) < l_max]))
 
-    coords = []
-    for i in range(len(bs)):
-        for j in range(len(ls[i])):
-            coords.append([ls[i][j], bs[i]])
+    # coords = []
+    # for i in range(len(bs)):
+    #     for j in range(len(ls[i])):
+    #         coords.append([ls[i][j], bs[i]])
+
+    coords = np.load("../Raphael/missed_coords.npy")
     
     #-------------------------------------------------------------------------------------------------------
     #                                          Initialize Objects        
@@ -98,54 +102,73 @@ def take_leusch_data(nspec, filename):
     
     n_fails = 0
     end_obs = False
+    unhit_coords = list(coords.copy())
+    print(f"We start observing with {len(unhit_coords)} target coordinates")
     
-    for coord in coords: 
-        
-        l, b = coord 
-        
-        alt, az = calc_pos(l, b) #calculate alt, az,
-        if alt >= ugradio.leusch.ALT_MAX or alt <= ugradio.leusch.ALT_MIN:
-            continue
-        elif az >= ugradio.leusch.AZ_MAX or az <= ugradio.leusch.AZ_MIN:
-            continue
-        else:
-            print('Moving to position... \n')
-            try:
-                telescope.point(alt, az) # point LT to calculated alt, az
-                index_string = "{0:0.3f} , {1:0.3f}".format(l,b)
+    num_failed_whiles = 0
+    while len(unhit_coords) != 0 or num_failed_whiles >= 5:
 
-                print('Current L.T. alt, az (degrees): {0:.4f}, {1:.4f}'.format(alt, az), 
-                      '\nTurning on noise diode.')
-                
-                synthesizer.set_frequency(635,'MHz')
-                spectrometer.read_spec(filename "_main" +'_'+index_string + ".fits", nspec, (l,b), 'ga')
-                
-                synthesizer.set_frequency(670,'MHz')
-                noise.on()
-                print('Collecting spectrum with noise diode on.')
+        num_coords_remaining_pre_loop = len(unhit_coords)
 
-                spectrometer.read_spec(filename_noise_on+'_'+index_string + ".fits", nspec, (l,b), 'ga')
+        for i,coord in enumerate(unhit_coords): 
 
-                print('Finished collecting spectrum with noide diode on. Turning off noise diode...')
-                noise.off()
-                print('Collecting spectrum with noise diode off.')
-       
-                spectrometer.read_spec(filename_noise_off+'_'+index_string + ".fits", nspec, (l,b), 'ga')
-                print('Finished collecting spectrum with noise diode off.')
-
-
-            except: # If pointing fails...
-                print('Failed to point to (alt, az)=({0:.4f}, {1:.4f}) (degrees)'.format(alt, az), 
-                      '\nPointing to next (alt, az).')
-                n_fails += 1
-                if n_fails == 10: # If number of pointing errors = 10 then break and end obs
-                    end_obs = True
-                    break
+            l, b = coord 
+            
+            alt, az = calc_pos(l, b) #calculate alt, az,
+            if alt >= ugradio.leusch.ALT_MAX or alt <= ugradio.leusch.ALT_MIN:
                 continue
+            elif az >= ugradio.leusch.AZ_MAX or az <= ugradio.leusch.AZ_MIN:
+                continue
+            else:
+                print('Moving to position... \n')
+                try:
+                    telescope.point(alt, az) # point LT to calculated alt, az
+                    index_string = "{0:0.3f} , {1:0.3f}".format(l,b)
 
-        if end_obs:
-            print('Too many pointing errors... Ending observation.')
-            break # end the observation
+                    print('Current L.T. alt, az (degrees): {0:.4f}, {1:.4f}'.format(alt, az), 
+                        '\nTurning on noise diode.')
+                    
+                    synthesizer.set_frequency(635,'MHz')
+                    spectrometer.read_spec(filename "_main" +'_'+index_string + ".fits", nspec, (l,b), 'ga')
+                    
+                    synthesizer.set_frequency(670,'MHz')
+                    noise.on()
+                    print('Collecting spectrum with noise diode on.')
+
+                    spectrometer.read_spec(filename_noise_on+'_'+index_string + ".fits", nspec, (l,b), 'ga')
+
+                    print('Finished collecting spectrum with noide diode on. Turning off noise diode...')
+                    noise.off()
+                    print('Collecting spectrum with noise diode off.')
+        
+                    spectrometer.read_spec(filename_noise_off+'_'+index_string + ".fits", nspec, (l,b), 'ga')
+                    print('Finished collecting spectrum with noise diode off.')
+
+                    unhit_coords.pop(i)
+
+
+                except: # If pointing fails...
+                    print('Failed to point to (alt, az)=({0:.4f}, {1:.4f}) (degrees)'.format(alt, az), 
+                        '\nPointing to next (alt, az).')
+                    n_fails += 1
+                    if n_fails == 200: # If number of pointing errors = 200 then break and end obs
+                        end_obs = True
+                        break
+                    continue
+            
+            if end_obs:
+                print('Too many pointing errors... Ending observation.')
+                break # end the observation
+            
+        num_coords_remaining_post_loop = len(unhit_coords)
+
+        if num_coords_remaining_post_loop == num_coords_remaining_pre_loop:
+            num_failed_whiles += 1
+            print("No new coordinates observed, I'm gonna sleep for 1 hour and hopefully we will see some more points.")
+            time.sleep(3600) #sleep for an hour if all of our coordinates are out of bounds and see
+
+
+            
             
     print("Stowing the Telescope!")
     telescope.stow() # stow when finished
