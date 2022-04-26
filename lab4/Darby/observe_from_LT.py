@@ -166,7 +166,8 @@ def take_leusch_data(nspec, filename):
             num_failed_whiles += 1
             print("No new coordinates observed, I'm gonna sleep for 1 hour and hopefully we will see some more points.")
             time.sleep(3600) #sleep for an hour if all of our coordinates are out of bounds and see
-
+        else:
+            print(f"We have {num_coords_remaining_post_loop} coordinates remaining.")
 
             
             
