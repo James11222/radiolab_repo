@@ -79,7 +79,7 @@ def take_leusch_data(nspec, filename):
     spectrometer = ugradio.leusch.Spectrometer()
     noise = ugradio.leusch.LeuschNoise()
     synthesizer = ugradio.agilent.SynthDirect()
-    
+    synthesizer.set_amplitude(10.0,'dBm')
     
     LT_lat, LT_lon, LT_alt = ugradio.leo.lat, ugradio.leo.lon, ugradio.leo.alt # get LT coords
     
