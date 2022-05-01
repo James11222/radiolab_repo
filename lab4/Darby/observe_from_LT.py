@@ -69,7 +69,7 @@ def take_leusch_data(nspec, filename):
     #     for j in range(len(ls[i])):
     #         coords.append([ls[i][j], bs[i]])
 
-    coords = np.load("../Raphael/missed_coords.npy")
+    coords = np.load("../Raphael/missed_coords_new.npy")
     
     #-------------------------------------------------------------------------------------------------------
     #                                          Initialize Objects        
